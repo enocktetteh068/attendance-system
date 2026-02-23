@@ -1,6 +1,8 @@
 #include <iostream>
 #include <vector>
 #include <limits>
+#include <fstream>
+#include <sstream>
 #include "../include/Student.h"
 #include "../include/AttendanceSession.h"
 
@@ -276,6 +278,51 @@ void generateReport(const std::vector<Student>& students,
     std::cout << "Present: " << presentCount << "\n";
     std::cout << "Absent: " << absentCount << "\n";
     std::cout << "Attendance Rate: " << rate << "%\n";
+}
+
+const std::string STUDENTS_FILE = "students.txt";
+
+void saveStudents(const std::vector<Student>& students) {
+    std::ofstream out(STUDENTS_FILE);
+    if (!out) {
+        std::cout << "Error: could not save students.\n";
+        return;
+    }
+
+    for (const auto& s : students) {
+        out << s.getId() << "|" << s.getName() << "|" << s.getProgram() << "\n";
+    }
+}
+
+void loadStudents(std::vector<Student>& students) {
+    students.clear();
+
+    std::ifstream in(STUDENTS_FILE);
+    if (!in) {
+        // File doesn't exist yet (first run) — not an error.
+        return;
+    }
+
+    std::string line;
+    while (std::getline(in, line)) {
+        if (line.empty()) continue;
+
+        std::stringstream ss(line);
+        std::string idStr, name, program;
+
+        if (!std::getline(ss, idStr, '|')) continue;
+        if (!std::getline(ss, name, '|')) continue;
+        if (!std::getline(ss, program)) continue;
+
+        try {
+            int id = std::stoi(idStr);
+            if (id > 0 && !name.empty() && !program.empty()) {
+                students.push_back(Student(id, name, program));
+            }
+        } catch (...) {
+            // skip bad lines
+        }
+    }
 }
 
 int main() {
