@@ -45,12 +45,28 @@ int findSessionIndex(const std::vector<AttendanceSession>& sessions,
 
 void addStudent(std::vector<Student>& students) {
     int id = readInt("Enter student ID: ");
+
+    if (id <= 0) {
+        std::cout << "Student ID must be positive.\n";
+        return;
+    }
+
     if (idExists(students, id)) {
         std::cout << "That ID already exists. Student not added.\n";
         return;
     }
+
     std::string name = readLine("Enter student name: ");
+    if (name.empty()) {
+        std::cout << "Name cannot be empty.\n";
+        return;
+    }
+
     std::string program = readLine("Enter program: ");
+    if (program.empty()) {
+        std::cout << "Program cannot be empty.\n";
+        return;
+    }
 
     students.push_back(Student(id, name, program));
     std::cout << "Student added successfully.\n";
@@ -67,7 +83,16 @@ void viewStudents(const std::vector<Student>& students) {
 
 void createSession(std::vector<AttendanceSession>& sessions) {
     std::string date = readLine("Enter session date (e.g., 2026-02-20): ");
-    std::string title = readLine("Enter session title (e.g., DCN Lecture): ");
+    if (date.empty()) {
+        std::cout << "Date cannot be empty.\n";
+        return;
+    }
+
+    std::string title = readLine("Enter session title: ");
+    if (title.empty()) {
+        std::cout << "Title cannot be empty.\n";
+        return;
+    }
 
     if (findSessionIndex(sessions, date, title) != -1) {
         std::cout << "Session already exists.\n";
@@ -276,6 +301,7 @@ int main() {
             case 3: createSession(sessions); break;
             case 4: markAttendance(students, sessions); break;
             case 5: viewSessionDetails(students, sessions); break;
+            case 6: generateReport(students, sessions); break;
             case 0: std::cout << "Goodbye.\n"; break;
             default: std::cout << "Invalid option.\n";
         }
