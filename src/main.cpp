@@ -149,6 +149,55 @@ void viewSessionDetails(const std::vector<Student>& students,
     }
 
     const AttendanceSession& session = sessions[pick - 1];
+    std::cout << "\n===== Session Details =====\n";
+    session.displaySummary();
+
+    const auto& present = session.getPresentIds();
+
+    // Present list
+    std::cout << "\nPresent students:\n";
+    if (present.empty()) {
+        std::cout << "None\n";
+    } else {
+        for (int id : present) {
+            for (const auto& s : students) {
+                if (s.getId() == id) {
+                    s.display();
+                    break;
+                }
+            }
+        }
+    }
+
+    // Absent list (computed)
+    std::cout << "\nAbsent students:\n";
+    int absentCount = 0;
+    for (const auto& s : students) {
+        if (!session.isPresent(s.getId())) {
+            s.display();
+            absentCount++;
+        }
+    }
+    if (absentCount == 0) std::cout << "None\n";
+
+    int total = (int)students.size();
+    int presentCount = (int)present.size();
+    double rate = (total == 0) ? 0.0 : (presentCount * 100.0 / total);
+
+    std::cout << "\nTotal: " << total
+              << " | Present: " << presentCount
+              << " | Absent: " << absentCount
+              << " | Attendance: " << rate << "%\n";
+}
+
+    listSessions(sessions);
+    int pick = readInt("Choose session number: ");
+    if (pick < 1 || pick > (int)sessions.size()) {
+        std::cout << "Invalid session.\n";
+        return;
+    }
+
+    const AttendanceSession& session = sessions[pick - 1];
     session.displaySummary();
 
     const auto& present = session.getPresentIds();
@@ -171,6 +220,37 @@ void viewSessionDetails(const std::vector<Student>& students,
     int absentCount = (int)students.size() - (int)present.size();
     if (absentCount < 0) absentCount = 0; // safety
     std::cout << "\nAbsent count (auto): " << absentCount << "\n";
+
+void generateReport(const std::vector<Student>& students,
+                    const std::vector<AttendanceSession>& sessions) {
+
+    if (sessions.empty()) {
+        std::cout << "No sessions available.\n";
+        return;
+    }
+
+    listSessions(sessions);
+    int pick = readInt("Choose session number: ");
+    if (pick < 1 || pick > (int)sessions.size()) {
+        std::cout << "Invalid session.\n";
+        return;
+    }
+
+    const AttendanceSession& session = sessions[pick - 1];
+    const auto& present = session.getPresentIds();
+
+    int total = (int)students.size();
+    int presentCount = (int)present.size();
+    int absentCount = total - presentCount;
+    double rate = (total == 0) ? 0.0 : (presentCount * 100.0 / total);
+
+    std::cout << "\n===== ATTENDANCE REPORT =====\n";
+    std::cout << "Session: " << session.getTitle()
+              << " | Date: " << session.getDate() << "\n";
+    std::cout << "Total Students: " << total << "\n";
+    std::cout << "Present: " << presentCount << "\n";
+    std::cout << "Absent: " << absentCount << "\n";
+    std::cout << "Attendance Rate: " << rate << "%\n";
 }
 
 int main() {
@@ -184,8 +264,9 @@ int main() {
         std::cout << "2. View Students\n";
         std::cout << "3. Create Attendance Session\n";
         std::cout << "4. Mark Attendance (Present)\n";
-        std::cout << "5. View Session Details\n";
-        std::cout << "0. Exit\n";
+    std::cout << "5. View Session Details\n";
+    std::cout << "6. Generate Session Report\n";
+    std::cout << "0. Exit\n";
 
         choice = readInt("Choose an option: ");
 
