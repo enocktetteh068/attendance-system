@@ -325,6 +325,122 @@ void loadStudents(std::vector<Student>& students) {
     }
 }
 
+const std::string STUDENTS_FILE = "students.txt";
+
+void saveStudents(const std::vector<Student>& students) {
+    std::ofstream out(STUDENTS_FILE);
+    if (!out) {
+        std::cout << "Error: could not save students.\n";
+        return;
+    }
+
+    for (const auto& s : students) {
+        out << s.getId() << "|" << s.getName() << "|" << s.getProgram() << "\n";
+    }
+}
+
+void loadStudents(std::vector<Student>& students) {
+    students.clear();
+
+    std::ifstream in(STUDENTS_FILE);
+    if (!in) {
+        // File doesn't exist yet (first run) — not an error.
+        return;
+    }
+
+    std::string line;
+    while (std::getline(in, line)) {
+        if (line.empty()) continue;
+
+        std::stringstream ss(line);
+        std::string idStr, name, program;
+
+        if (!std::getline(ss, idStr, '|')) continue;
+        if (!std::getline(ss, name, '|')) continue;
+        if (!std::getline(ss, program)) continue;
+
+        try {
+            int id = std::stoi(idStr);
+            if (id > 0 && !name.empty() && !program.empty()) {
+                students.push_back(Student(id, name, program));
+            }
+        } catch (...) {
+            // skip bad lines
+        }
+    }
+}
+
+const std::string SESSIONS_FILE = "sessions.txt";
+
+std::string joinIds(const std::vector<int>& ids) {
+    std::ostringstream out;
+    for (size_t i = 0; i < ids.size(); i++) {
+        out << ids[i];
+        if (i + 1 < ids.size()) out << ",";
+    }
+    return out.str();
+}
+
+std::vector<int> splitIds(const std::string& s) {
+    std::vector<int> ids;
+    std::stringstream ss(s);
+    std::string token;
+
+    while (std::getline(ss, token, ',')) {
+        if (token.empty()) continue;
+        try {
+            ids.push_back(std::stoi(token));
+        } catch (...) {
+            // skip bad token
+        }
+    }
+    return ids;
+}
+
+void saveSessions(const std::vector<AttendanceSession>& sessions) {
+    std::ofstream out(SESSIONS_FILE);
+    if (!out) {
+        std::cout << "Error: could not save sessions.\n";
+        return;
+    }
+
+    for (const auto& session : sessions) {
+        out << session.getDate() << "|"
+            << session.getTitle() << "|"
+            << joinIds(session.getPresentIds()) << "\n";
+    }
+}
+
+void loadSessions(std::vector<AttendanceSession>& sessions) {
+    sessions.clear();
+
+    std::ifstream in(SESSIONS_FILE);
+    if (!in) return;
+
+    std::string line;
+    while (std::getline(in, line)) {
+        if (line.empty()) continue;
+
+        std::stringstream ss(line);
+        std::string date, title, idsStr;
+
+        if (!std::getline(ss, date, '|')) continue;
+        if (!std::getline(ss, title, '|')) continue;
+        std::getline(ss, idsStr); // may be empty
+
+        if (date.empty() || title.empty()) continue;
+
+        AttendanceSession session(date, title);
+
+        auto ids = splitIds(idsStr);
+        for (int id : ids) {
+            session.markPresent(id); // prevents duplicates automatically
+        }
+
+        sessions.push_back(session);
+    }
+}
+
 int main() {
     std::vector<Student> students;
     std::vector<AttendanceSession> sessions;
