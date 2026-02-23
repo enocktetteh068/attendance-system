@@ -445,6 +445,12 @@ int main() {
     std::vector<Student> students;
     std::vector<AttendanceSession> sessions;
 
+    loadStudents(students);
+    loadSessions(sessions);
+
+    std::cout << "Loaded " << students.size() << " students and "
+          << sessions.size() << " sessions.\n";
+
     int choice;
     do {
         std::cout << "\n===== Student Attendance System (Week 2) =====\n";
@@ -452,9 +458,9 @@ int main() {
         std::cout << "2. View Students\n";
         std::cout << "3. Create Attendance Session\n";
         std::cout << "4. Mark Attendance (Present)\n";
-    std::cout << "5. View Session Details\n";
-    std::cout << "6. Generate Session Report\n";
-    std::cout << "0. Exit\n";
+        std::cout << "5. View Session Details\n";
+        std::cout << "6. Generate Session Report\n";
+        std::cout << "0. Exit\n";
 
         choice = readInt("Choose an option: ");
 
@@ -465,7 +471,11 @@ int main() {
             case 4: markAttendance(students, sessions); break;
             case 5: viewSessionDetails(students, sessions); break;
             case 6: generateReport(students, sessions); break;
-            case 0: std::cout << "Goodbye.\n"; break;
+            case 0:
+                saveStudents(students);
+                saveSessions(sessions);
+                std::cout << "Saved. Goodbye.\n";
+                break;
             default: std::cout << "Invalid option.\n";
         }
     } while (choice != 0);
