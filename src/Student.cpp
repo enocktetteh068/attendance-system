@@ -1,4 +1,4 @@
-#include "Student.h"
+#include "../include/Student.h"
 #include <iostream>
 
 Student::Student(int id, std::string name, std::string program) {
